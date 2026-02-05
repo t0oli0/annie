@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>valentines</title>
+  <title>valentine</title>
 
   <style>
     * {
@@ -14,53 +14,69 @@
     body {
       margin: 0;
       height: 100vh;
-      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+      background: linear-gradient(180deg, #ffd6e8, #ffeaf4);
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #5a2a3c;
+      text-align: center;
     }
 
     .card {
-      background: white;
-      padding: 32px 24px;
-      border-radius: 24px;
       width: 90%;
       max-width: 360px;
-      text-align: center;
-      box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+      background: #fff0f7;
+      padding: 28px 20px;
+      border-radius: 28px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+      position: relative;
+      overflow: hidden;
     }
 
     h1 {
-      font-size: 1.6rem;
-      margin-bottom: 24px;
+      font-size: 1.5rem;
+      margin-bottom: 16px;
+    }
+
+    img {
+      width: 100%;
+      max-height: 180px;
+      object-fit: cover;
+      border-radius: 18px;
+      margin-bottom: 12px;
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      opacity: 0.6;
     }
 
     .buttons {
       display: flex;
-      gap: 16px;
+      gap: 14px;
       justify-content: center;
-      position: relative;
       margin-top: 16px;
+      position: relative;
     }
 
     button {
       border: none;
       padding: 14px 22px;
-      font-size: 1rem;
       border-radius: 999px;
+      font-size: 1rem;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: transform 0.15s ease;
+      position: relative;
     }
 
     .yes {
-      background: #ff4d6d;
+      background: #ff8fc7;
       color: white;
     }
 
     .no {
-      background: #e5e5e5;
-      color: #333;
-      position: relative;
+      background: #ffd1e6;
+      color: #5a2a3c;
     }
 
     .hidden {
@@ -75,36 +91,118 @@
 </head>
 
 <body>
-  <div class="card">
-    <h1 id="question">will u be my valentines 💘</h1>
+  <div class="card" id="card">
+    <h1 id="text"></h1>
+    <img id="image" src="" alt="" />
+    <div class="hint" id="hint"></div>
 
-    <div class="buttons" id="buttons">
-      <button class="yes" onclick="sayYes()">yes</button>
-      <button class="no" id="noBtn">no</button>
+    <div class="buttons hidden" id="buttons">
+      <button id="yesBtn" class="yes">yes</button>
+      <button id="noBtn" class="no">no</button>
     </div>
 
     <div class="result hidden" id="result">
-      yay 💖 i knew u would say yes
+      yay 💖 its a date
     </div>
   </div>
 
   <script>
-    const noBtn = document.getElementById("noBtn")
-    const buttons = document.getElementById("buttons")
-    const result = document.getElementById("result")
-    const question = document.getElementById("question")
+    const steps = [
+      {
+        text: "hi annie",
+        image: "https://placekitten.com/400/250",
+        hint: "press anywhere to skip"
+      },
+      {
+        text: "i was wondering..",
+        image: "https://placekitten.com/401/250"
+      },
+      {
+        text: "what u were doing next week?",
+        image: "https://placekitten.com/402/250"
+      },
+      {
+        text: "and if youd..",
+        image: "https://placekitten.com/403/250"
+      },
+      {
+        text: "be my valentine?",
+        image: "https://placekitten.com/404/250",
+        buttons: true
+      }
+    ]
 
-    noBtn.addEventListener("click", () => {
+    let step = 0
+    let noClicks = 0
+    let swapped = false
+    let finalNoClicks = 0
+
+    const text = document.getElementById("text")
+    const image = document.getElementById("image")
+    const hint = document.getElementById("hint")
+    const buttons = document.getElementById("buttons")
+    const yesBtn = document.getElementById("yesBtn")
+    const noBtn = document.getElementById("noBtn")
+    const result = document.getElementById("result")
+    const card = document.getElementById("card")
+
+    function renderStep() {
+      const s = steps[step]
+      text.textContent = s.text
+      image.src = s.image
+      hint.textContent = s.hint || ""
+
+      if (s.buttons) {
+        buttons.classList.remove("hidden")
+      } else {
+        buttons.classList.add("hidden")
+      }
+    }
+
+    renderStep()
+
+    card.addEventListener("click", () => {
+      if (step < steps.length - 1 && !steps[step].buttons) {
+        step++
+        renderStep()
+      }
+    })
+
+    function finish() {
+      buttons.classList.add("hidden")
+      result.classList.remove("hidden")
+      text.textContent = "hehe 💕"
+    }
+
+    yesBtn.addEventListener("click", (e) => {
+      e.stopPropagation()
+      finish()
+    })
+
+    noBtn.addEventListener("click", (e) => {
+      e.stopPropagation()
+
       const x = Math.random() * 200 - 100
       const y = Math.random() * 200 - 100
       noBtn.style.transform = `translate(${x}px, ${y}px)`
-    })
 
-    function sayYes() {
-      buttons.classList.add("hidden")
-      question.textContent = "hehe 💕"
-      result.classList.remove("hidden")
-    }
+      if (!swapped) {
+        noClicks++
+
+        if (noClicks >= 10) {
+          yesBtn.textContent = "no"
+          noBtn.textContent = "yes"
+          swapped = true
+        }
+      } else {
+        finalNoClicks++
+
+        if (finalNoClicks >= 2) {
+          yesBtn.textContent = "yes"
+          noBtn.textContent = "yes"
+        }
+      }
+    })
   </script>
 </body>
 </html>
