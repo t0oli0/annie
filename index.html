@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>valentine</title>
 
+  <!-- emailjs -->
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    emailjs.init("ZUKajh8BhhjF8dgc2")
+  </script>
+
   <style>
     * {
       box-sizing: border-box;
@@ -18,42 +24,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      color: #5a2a3c;
       text-align: center;
-      overflow: hidden;
-    }
-
-    #gif-container,
-    #heart-container {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-    }
-
-    .flying-gif {
-      position: absolute;
-      width: 64px;
-      opacity: 0.75;
-      animation: float linear infinite;
-    }
-
-    @keyframes float {
-      from { transform: translateY(110vh) rotate(0deg); }
-      to { transform: translateY(-130vh) rotate(360deg); }
-    }
-
-    .heart {
-      position: absolute;
-      top: -5vh;
-      font-size: 18px;
-      animation: fall linear infinite;
-      opacity: 0.7;
-    }
-
-    @keyframes fall {
-      to { transform: translateY(110vh); }
+      color: #5a2a3c;
     }
 
     .card {
@@ -63,199 +35,87 @@
       padding: 28px 20px;
       border-radius: 28px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.12);
-      position: relative;
-      z-index: 2;
     }
 
     h1 {
-      font-size: 1.5rem;
       margin-bottom: 16px;
+      font-size: 1.5rem;
     }
 
-    img.step-img {
+    button, input {
       width: 100%;
-      max-height: 180px;
-      object-fit: cover;
-      border-radius: 18px;
-      margin-bottom: 12px;
-    }
-
-    .hint {
-      font-size: 0.8rem;
-      opacity: 0.6;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      margin-top: 16px;
+      padding: 14px;
+      margin-top: 12px;
+      border-radius: 999px;
+      border: none;
+      font-size: 1rem;
     }
 
     button {
-      border: none;
-      padding: 14px 22px;
-      border-radius: 999px;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: transform 0.15s ease;
-    }
-
-    .yes {
       background: #ff8fc7;
       color: white;
+      cursor: pointer;
     }
 
-    .no {
-      background: #ffd1e6;
-      color: #5a2a3c;
+    input {
+      background: white;
+      text-align: center;
     }
 
     .hidden {
       display: none;
     }
-
-    .result {
-      font-size: 1.4rem;
-      margin-top: 12px;
-    }
   </style>
 </head>
 
 <body>
-
-  <!-- background chaos -->
-  <div id="gif-container"></div>
-  <div id="heart-container"></div>
-
-  <!-- hidden formspree form -->
-  <form
-    id="valentineForm"
-    action="https://formspree.io/f/xdalapoz"
-    method="POST"
-    style="display:none;"
-  >
-    <input type="hidden" name="message" value="annie clicked yes 💖" />
-  </form>
-
-  <div class="card" id="card">
-    <h1 id="text"></h1>
-    <img id="image" class="step-img" src="" alt="" />
-    <div class="hint" id="hint"></div>
-
-    <div class="buttons hidden" id="buttons">
-      <button id="yesBtn" class="yes">yes</button>
-      <button id="noBtn" class="no">no</button>
+  <div class="card">
+    <!-- step 1 -->
+    <div id="step1">
+      <h1>be my valentine? 💘</h1>
+      <button onclick="goToEmail()">yes</button>
     </div>
 
-    <div class="result hidden" id="result">
-      yay 💖 its a date
+    <!-- step 2 -->
+    <div id="step2" class="hidden">
+      <h1>please fill out your email 💌</h1>
+      <input
+        id="emailInput"
+        type="email"
+        placeholder="your email"
+        required
+      />
+      <button onclick="sendValentine()">submit</button>
+    </div>
+
+    <!-- step 3 -->
+    <div id="step3" class="hidden">
+      <h1>mwahahaha 😈</h1>
     </div>
   </div>
 
   <script>
-    const steps = [
-      { text: "hi annie", image: "https://placekitten.com/400/250", hint: "press anywhere to skip" },
-      { text: "i was wondering..", image: "https://placekitten.com/401/250" },
-      { text: "this saturday", image: "https://placekitten.com/402/250" },
-      { text: "and if youd..", image: "https://placekitten.com/403/250" },
-      { text: "be my valentine?", image: "https://placekitten.com/404/250", buttons: true }
-    ]
-
-    let step = 0
-    let noClicks = 0
-    let dodgeEnabled = true
-
-    const card = document.getElementById("card")
-    const text = document.getElementById("text")
-    const image = document.getElementById("image")
-    const hint = document.getElementById("hint")
-    const buttons = document.getElementById("buttons")
-    const yesBtn = document.getElementById("yesBtn")
-    const noBtn = document.getElementById("noBtn")
-    const result = document.getElementById("result")
-
-    function renderStep() {
-      const s = steps[step]
-      text.textContent = s.text
-      image.src = s.image
-      hint.textContent = s.hint || ""
-      buttons.classList.toggle("hidden", !s.buttons)
+    function goToEmail() {
+      document.getElementById("step1").classList.add("hidden")
+      document.getElementById("step2").classList.remove("hidden")
     }
 
-    renderStep()
-
-    card.addEventListener("click", () => {
-      if (step < steps.length - 1 && !steps[step].buttons) {
-        step++
-        renderStep()
-      }
-    })
-
-    function finish() {
-      buttons.classList.add("hidden")
-      result.classList.remove("hidden")
-      text.textContent = "mwahahaha 😈"
-      document.getElementById("valentineForm").submit()
-    }
-
-    yesBtn.addEventListener("click", e => {
-      e.stopPropagation()
-      finish()
-    })
-
-    noBtn.addEventListener("click", e => {
-      e.stopPropagation()
-
-      if (!dodgeEnabled) {
-        finish()
+    function sendValentine() {
+      const email = document.getElementById("emailInput").value.trim()
+      if (!email) {
+        alert("enter your email")
         return
       }
 
-      const cardRect = card.getBoundingClientRect()
-      const btnRect = noBtn.getBoundingClientRect()
+      emailjs.send(
+        "service_j0hah7b",
+        "template_l9xp794",
+        { to_email: email }
+      )
 
-      const maxX = cardRect.width / 2 - btnRect.width
-      const maxY = cardRect.height / 2 - btnRect.height
-
-      const x = Math.random() * maxX * 2 - maxX
-      const y = Math.random() * maxY * 2 - maxY
-
-      noBtn.style.transform = `translate(${x}px, ${y}px)`
-      noClicks++
-
-      if (noClicks >= 10) {
-        yesBtn.textContent = "no"
-        noBtn.textContent = "yes"
-        dodgeEnabled = false
-      }
-    })
-
-    /* flying dogs */
-    const gifContainer = document.getElementById("gif-container")
-    for (let i = 0; i < 14; i++) {
-      const img = document.createElement("img")
-      img.src = "dog.gif"
-      img.className = "flying-gif"
-      img.style.left = Math.random() * 100 + "vw"
-      img.style.animationDuration = 8 + Math.random() * 8 + "s"
-      img.style.animationDelay = Math.random() * 6 + "s"
-      gifContainer.appendChild(img)
+      document.getElementById("step2").classList.add("hidden")
+      document.getElementById("step3").classList.remove("hidden")
     }
-
-    /* falling hearts */
-    const heartContainer = document.getElementById("heart-container")
-    setInterval(() => {
-      const heart = document.createElement("div")
-      heart.className = "heart"
-      heart.textContent = "❤️"
-      heart.style.left = Math.random() * 100 + "vw"
-      heart.style.animationDuration = 4 + Math.random() * 4 + "s"
-      heart.style.fontSize = 14 + Math.random() * 20 + "px"
-      heartContainer.appendChild(heart)
-      setTimeout(() => heart.remove(), 8000)
-    }, 300)
   </script>
-
 </body>
 </html>
