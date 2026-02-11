@@ -26,6 +26,7 @@
       justify-content: center;
       text-align: center;
       overflow: hidden;
+      color: #5a2a3c;
     }
 
     #heart-container,
@@ -46,7 +47,7 @@
 
     .dog {
       position: absolute;
-      width: 60px;
+      width: 64px;
       top: -10vh;
       animation: fall linear infinite;
     }
@@ -61,10 +62,12 @@
       width: 90%;
       max-width: 360px;
       background: #fff0f7;
-      padding: 28px 20px;
+      padding: 28px 20px 32px;
       border-radius: 28px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.12);
       z-index: 2;
+      position: relative;
+      overflow: hidden;
     }
 
     h1 {
@@ -72,22 +75,40 @@
       margin-bottom: 16px;
     }
 
-    button, input {
-      width: 100%;
-      padding: 14px;
+    .buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
       margin-top: 12px;
+      position: relative;
+    }
+
+    button,
+    input {
+      padding: 14px;
       border-radius: 999px;
       border: none;
       font-size: 1rem;
     }
 
     button {
-      background: #ff8fc7;
-      color: white;
       cursor: pointer;
     }
 
+    .yes {
+      background: #ff8fc7;
+      color: white;
+    }
+
+    .no {
+      background: #ffd1e6;
+      color: #5a2a3c;
+      position: relative;
+    }
+
     input {
+      width: 100%;
+      margin-top: 12px;
       text-align: center;
     }
 
@@ -99,18 +120,24 @@
 
 <body>
 
+  <!-- sound -->
+  <audio id="blop" src="blop.mp3" preload="auto"></audio>
+
   <div id="heart-container"></div>
   <div id="dog-container"></div>
 
   <div class="card" id="card">
     <h1 id="text"></h1>
 
-    <button id="yesBtn" class="hidden">yes 💘</button>
+    <div class="buttons hidden" id="choiceButtons">
+      <button id="yesBtn" class="yes">yes 💘</button>
+      <button id="noBtn" class="no">no</button>
+    </div>
 
     <div id="emailStep" class="hidden">
       <p>please fill out your email 💌</p>
       <input id="emailInput" type="email" placeholder="your email" />
-      <button onclick="sendEmail()">submit</button>
+      <button class="yes" onclick="sendEmail()">submit</button>
     </div>
 
     <h1 id="final" class="hidden">mwahahaha 😈</h1>
@@ -121,35 +148,64 @@
       "hi annie 🥺🐶",
       "i was wondering 😛",
       "if u were free? 👀",
-      "this saturday? 🐕‍🦺",
+      "this saturday? 🐕",
       "and if youd… 😳",
       "be my valentine? 💘"
     ]
 
     let index = 0
+    let noClicks = 0
+
+    const card = document.getElementById("card")
     const text = document.getElementById("text")
     const yesBtn = document.getElementById("yesBtn")
+    const noBtn = document.getElementById("noBtn")
+    const buttons = document.getElementById("choiceButtons")
     const emailStep = document.getElementById("emailStep")
     const final = document.getElementById("final")
+    const blop = document.getElementById("blop")
 
     text.textContent = lines[0]
 
-    document.getElementById("card").addEventListener("click", () => {
+    card.addEventListener("click", () => {
       if (index < lines.length - 1) {
         index++
         text.textContent = lines[index]
         if (index === lines.length - 1) {
-          yesBtn.classList.remove("hidden")
+          buttons.classList.remove("hidden")
         }
       }
     })
 
     yesBtn.addEventListener("click", e => {
       e.stopPropagation()
+
+      blop.currentTime = 0
+      blop.play()
+
       startChaos()
-      yesBtn.classList.add("hidden")
+      buttons.classList.add("hidden")
       text.classList.add("hidden")
       emailStep.classList.remove("hidden")
+    })
+
+    noBtn.addEventListener("click", e => {
+      e.stopPropagation()
+
+      const cardRect = card.getBoundingClientRect()
+      const btnRect = noBtn.getBoundingClientRect()
+
+      const maxX = cardRect.width - btnRect.width - 24
+      const maxY = cardRect.height - btnRect.height - 24
+
+      const x = Math.random() * maxX
+      const y = Math.random() * maxY
+
+      noBtn.style.position = "absolute"
+      noBtn.style.left = x + "px"
+      noBtn.style.top = y + "px"
+
+      noClicks++
     })
 
     function startChaos() {
