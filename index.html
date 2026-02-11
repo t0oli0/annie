@@ -20,6 +20,40 @@
       justify-content: center;
       color: #5a2a3c;
       text-align: center;
+      overflow: hidden;
+    }
+
+    #gif-container,
+    #heart-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .flying-gif {
+      position: absolute;
+      width: 64px;
+      opacity: 0.75;
+      animation: float linear infinite;
+    }
+
+    @keyframes float {
+      from { transform: translateY(110vh) rotate(0deg); }
+      to { transform: translateY(-130vh) rotate(360deg); }
+    }
+
+    .heart {
+      position: absolute;
+      top: -5vh;
+      font-size: 18px;
+      animation: fall linear infinite;
+      opacity: 0.7;
+    }
+
+    @keyframes fall {
+      to { transform: translateY(110vh); }
     }
 
     .card {
@@ -30,6 +64,7 @@
       border-radius: 28px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.12);
       position: relative;
+      z-index: 2;
     }
 
     h1 {
@@ -37,7 +72,7 @@
       margin-bottom: 16px;
     }
 
-    img {
+    img.step-img {
       width: 100%;
       max-height: 180px;
       object-fit: cover;
@@ -55,7 +90,6 @@
       gap: 14px;
       justify-content: center;
       margin-top: 16px;
-      position: relative;
     }
 
     button {
@@ -65,7 +99,6 @@
       font-size: 1rem;
       cursor: pointer;
       transition: transform 0.15s ease;
-      position: relative;
     }
 
     .yes {
@@ -90,9 +123,24 @@
 </head>
 
 <body>
+
+  <!-- background chaos -->
+  <div id="gif-container"></div>
+  <div id="heart-container"></div>
+
+  <!-- hidden formspree form -->
+  <form
+    id="valentineForm"
+    action="https://formspree.io/f/xdalapoz"
+    method="POST"
+    style="display:none;"
+  >
+    <input type="hidden" name="message" value="annie clicked yes 💖" />
+  </form>
+
   <div class="card" id="card">
     <h1 id="text"></h1>
-    <img id="image" src="" alt="" />
+    <img id="image" class="step-img" src="" alt="" />
     <div class="hint" id="hint"></div>
 
     <div class="buttons hidden" id="buttons">
@@ -107,28 +155,11 @@
 
   <script>
     const steps = [
-      {
-        text: "hi annie",
-        image: "https://placekitten.com/400/250",
-        hint: "press anywhere to skip"
-      },
-      {
-        text: "i was wondering..",
-        image: "https://placekitten.com/401/250"
-      },
-      {
-        text: "what u were doing next week?",
-        image: "https://placekitten.com/402/250"
-      },
-      {
-        text: "and if youd..",
-        image: "https://placekitten.com/403/250"
-      },
-      {
-        text: "be my valentine?",
-        image: "https://placekitten.com/404/250",
-        buttons: true
-      }
+      { text: "hi annie", image: "https://placekitten.com/400/250", hint: "press anywhere to skip" },
+      { text: "i was wondering..", image: "https://placekitten.com/401/250" },
+      { text: "this saturday", image: "https://placekitten.com/402/250" },
+      { text: "and if youd..", image: "https://placekitten.com/403/250" },
+      { text: "be my valentine?", image: "https://placekitten.com/404/250", buttons: true }
     ]
 
     let step = 0
@@ -149,12 +180,7 @@
       text.textContent = s.text
       image.src = s.image
       hint.textContent = s.hint || ""
-
-      if (s.buttons) {
-        buttons.classList.remove("hidden")
-      } else {
-        buttons.classList.add("hidden")
-      }
+      buttons.classList.toggle("hidden", !s.buttons)
     }
 
     renderStep()
@@ -169,24 +195,23 @@
     function finish() {
       buttons.classList.add("hidden")
       result.classList.remove("hidden")
-      text.textContent = "hehe 💕"
+      text.textContent = "mwahahaha 😈"
+      document.getElementById("valentineForm").submit()
     }
 
-    yesBtn.addEventListener("click", (e) => {
+    yesBtn.addEventListener("click", e => {
       e.stopPropagation()
       finish()
     })
 
-    noBtn.addEventListener("click", (e) => {
+    noBtn.addEventListener("click", e => {
       e.stopPropagation()
 
-      // if this button is acting as yes, accept
       if (!dodgeEnabled) {
         finish()
         return
       }
 
-      // dodge but stay inside card
       const cardRect = card.getBoundingClientRect()
       const btnRect = noBtn.getBoundingClientRect()
 
@@ -197,16 +222,40 @@
       const y = Math.random() * maxY * 2 - maxY
 
       noBtn.style.transform = `translate(${x}px, ${y}px)`
-
       noClicks++
 
-      // after 10 dodges, swap labels and disable dodge
       if (noClicks >= 10) {
         yesBtn.textContent = "no"
         noBtn.textContent = "yes"
         dodgeEnabled = false
       }
     })
+
+    /* flying dogs */
+    const gifContainer = document.getElementById("gif-container")
+    for (let i = 0; i < 14; i++) {
+      const img = document.createElement("img")
+      img.src = "dog.gif"
+      img.className = "flying-gif"
+      img.style.left = Math.random() * 100 + "vw"
+      img.style.animationDuration = 8 + Math.random() * 8 + "s"
+      img.style.animationDelay = Math.random() * 6 + "s"
+      gifContainer.appendChild(img)
+    }
+
+    /* falling hearts */
+    const heartContainer = document.getElementById("heart-container")
+    setInterval(() => {
+      const heart = document.createElement("div")
+      heart.className = "heart"
+      heart.textContent = "❤️"
+      heart.style.left = Math.random() * 100 + "vw"
+      heart.style.animationDuration = 4 + Math.random() * 4 + "s"
+      heart.style.fontSize = 14 + Math.random() * 20 + "px"
+      heartContainer.appendChild(heart)
+      setTimeout(() => heart.remove(), 8000)
+    }, 300)
   </script>
+
 </body>
 </html>
